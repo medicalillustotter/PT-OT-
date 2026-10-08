@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>医療福祉系 国試カウントダウン 2027</title>
+<style>
+:root{--bg:#f6f8fa;--card:#fff;--text:#1d2733;--sub:#667385;--line:#e3e8ee;--red:#f77f7f;--blue:#12b7e0;--org:#f5c35f;--grn:#9bc45c;--acc:#12b7e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#1a232d;--text:#e8eef4;--sub:#93a1b2;--line:#2a3643}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#1a232d;--text:#e8eef4;--sub:#93a1b2;--line:#2a3643}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;line-height:1.5}
+main{max-width:760px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.25rem;margin:0 0 4px;text-align:center}
+.lead{text-align:center;color:var(--sub);font-size:.85rem;margin:0 0 16px}
+.hero{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:center;border-top:6px solid var(--acc)}
+.hero small{color:var(--sub)}
+.hero h2{margin:4px 0 12px;font-size:1.3rem}
+.big{font-size:3.6rem;font-weight:800;line-height:1}
+.big span{font-size:1.1rem;font-weight:600;margin-left:4px}
+.hms{margin-top:8px;color:var(--sub);font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 10px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:99px;padding:6px 14px;font-size:.85rem;cursor:pointer}
+.chip.on{background:var(--text);color:var(--bg)}
+.row{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.row.past{opacity:.45}
+.date{min-width:74px}
+.date b{display:block;font-size:1rem}
+.date span{font-size:.75rem;color:var(--sub)}
+.names{flex:1;font-size:.95rem}
+.names i{font-style:normal;color:var(--sub);font-size:.8rem;margin-left:6px}
+.names div{padding:2px 0}
+.names button{all:unset;cursor:pointer;margin-right:6px;color:var(--sub)}
+.names button.my{color:#f0b429}
+.left{text-align:right;min-width:64px;font-weight:700;font-variant-numeric:tabular-nums}
+.left small{display:block;font-weight:400;color:var(--sub);font-size:.7rem}
+.note{color:var(--sub);font-size:.75rem;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<h1>医療福祉系 国試カウントダウン 2027</h1>
+<p class="lead">★を押すと自分の試験に設定できます(日本時間 0:00 基準)</p>
+<section class="hero" id="hero"></section>
+<div class="chips" id="chips"></div>
+<div id="list"></div>
+<p class="note">※日程はカレンダー画像の内容に基づく暫定データです。2/20〜2/22の試験の振り分けなど、必ず厚生労働省・各実施団体の公式発表で確認してください。</p>
+</main>
+<script>
+const COL={red:"var(--red)",blue:"var(--blue)",org:"var(--org)",grn:"var(--grn)"};
+const D=[
+["2027-01-30","red",[["歯科医師",120]]],
+["2027-01-31","red",[["介護福祉士",39]]],
+["2027-02-06","blue",[["精神保健福祉士",29],["医師",121]]],
+["2027-02-07","blue",[["社会福祉士",39]]],
+["2027-02-11","blue",[["助産師",110]]],
+["2027-02-12","blue",[["保健師",113]]],
+["2027-02-14","blue",[["看護師",116]]],
+["2027-02-17","blue",[["臨床検査技師",73]]],
+["2027-02-18","blue",[["診療放射線技師",79],["視能訓練士",57]]],
+["2027-02-19","org",[["義肢装具士",40]]],
+["2027-02-20","org",[["言語聴覚士",29],["薬剤師",112]]],
+["2027-02-21","org",[["歯科技工士",12]]],
+["2027-02-22","org",[["理学療法士",62],["作業療法士",62]]],
+["2027-02-27","org",[["あん摩マッサージ指圧師",35]]],
+["2027-02-28","org",[["管理栄養士",41],["はり師",35],["きゅう師",35]]],
+["2027-03-07","grn",[["柔道整復師",35],["臨床工学技士",40],["歯科衛生士",36]]],
+["2027-03-14","grn",[["救急救命士",50]]]
+];
+const W="日月火水木金土";
+const t=s=>new Date(s+"T00:00:00+09:00");
+let my=null,filter="all";
+try{my=localStorage.getItem("myExam")}catch(e){}
+const $=id=>document.getElementById(id);
+const all=[...new Set(D.flatMap(d=>d[2].map(x=>x[0])))];
+function days(s){return Math.ceil((t(s)-Date.now())/864e5)}
+function fmt(s){const d=t(s);const j=new Date(d.getTime()+9*36e5);return{md:(j.getUTCMonth()+1)+"/"+j.getUTCDate(),w:W[j.getUTCDay()]}}
+function setMy(n){my=my===n?null:n;try{my?localStorage.setItem("myExam",my):localStorage.removeItem("myExam")}catch(e){}render()}
+function hero(){
+let target=null;
+if(my){const d=D.find(x=>x[2].some(e=>e[0]===my));if(d)target={n:my,s:d[0],c:d[1]}}
+if(!target){const d=D.find(x=>t(x[0])>Date.now());if(d)target={n:d[2].map(e=>e[0]).join("・"),s:d[0],c:d[1]}}
+const h=$("hero");
+if(!target){h.innerHTML="<h2>すべての試験が終了しました</h2>";return}
+h.style.borderTopColor=COL[target.c];
+const ms=Math.max(0,t(target.s)-Date.now());
+const d=Math.floor(ms/864e5),hh=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+const f=fmt(target.s);
+h.innerHTML=`<small>${my?"★ あなたの試験":"次の試験"}</small><h2>${target.n}</h2><div class="big">${d}<span>日</span></div><div class="hms">あと ${hh}時間 ${m}分 ${s}秒 ・ ${f.md}(${f.w})</div>`;
+}
+function render(){
+const c=$("chips");
+c.innerHTML=["all",...all].map(n=>`<button class="chip ${filter===n?"on":""}" data-n="${n}">${n==="all"?"すべて":n}</button>`).join("");
+c.querySelectorAll("button").forEach(b=>b.onclick=()=>{filter=b.dataset.n;render()});
+$("list").innerHTML="";
+D.forEach(([s,col,ex])=>{
+if(filter!=="all"&&!ex.some(e=>e[0]===filter))return;
+const n=days(s),f=fmt(s),past=t(s)<=Date.now()-864e5;
+const r=document.createElement("div");
+r.className="row"+(past?" past":"");r.style.setProperty("--c",COL[col]);
+r.innerHTML=`<div class="date"><b>${f.md}</b><span>${f.w}曜日</span></div><div class="names"></div><div class="left">${past?"終了":n<=0?"本日":n}<small>${past||n<=0?"":"日前"}</small></div>`;
+const box=r.querySelector(".names");
+ex.forEach(([nm,k])=>{
+if(filter!=="all"&&nm!==filter&&ex.length>1&&false)return;
+const dv=document.createElement("div");
+const b=document.createElement("button");b.textContent="★";b.title="自分の試験に設定";
+if(my===nm)b.className="my";b.onclick=()=>setMy(nm);
+dv.append(b,nm);const i=document.createElement("i");i.textContent="第"+k+"回";dv.append(i);box.append(dv);
+});
+$("list").append(r);
+});
+hero();
+}
+render();setInterval(hero,1000);
+</script>
+</body>
+</html>
